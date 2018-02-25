@@ -4,7 +4,6 @@ from sklearn.preprocessing import OneHotEncoder
 import tensorflow as tf
 
 
-
 (X_TRAIN, Y_TRAIN), (X_TEST, Y_TEST) = mnist.load_data()
 X_TRAIN = X_TRAIN.reshape(X_TRAIN.shape[0], -1)
 X_TEST = X_TEST.reshape(X_TEST.shape[0], -1)
