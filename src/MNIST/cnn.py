@@ -96,3 +96,8 @@ def main(epochs):
     for epoch in range(1, epochs + 1):
         train(epoch)
         test()
+
+
+
+if __name__ == "__main__":
+    main(30)
