@@ -1,8 +1,9 @@
 FROM pytorch/pytorch:latest
 
-RUN adduser --disabled-password --gecos '' --shell /bin/bash vinh
-USER vinh
-WORKDIR /home/vinh/code
+RUN mkdir -p /opt/ml/model
+RUN chmod 777 /opt/ml/model
+
 ADD . .
 
-ENTRYPOINT ["python", "src/MNIST/cnn.py"]
+ENV PYTHONUNBUFFERED=TRUE
+ENTRYPOINT ["python", "src/vinh_playground/MNIST/cnn.py"]

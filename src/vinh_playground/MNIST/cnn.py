@@ -1,3 +1,6 @@
+import pickle
+import json
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -68,7 +71,7 @@ def train(epoch):
         loss.backward()
         optimizer.step()
         if batch_idx % 100 == 0:
-            print("Training epoch: {} [{}/{} ({:0f}%]\tLoss: {:.6f}".format(
+            print("Training epoch: {} [{}/{} ({:0f}%] Loss: {:.6f}".format(
                 epoch, batch_idx * len(data), len(TRAIN_LOADER.dataset),
                 100. * batch_idx / len(TRAIN_LOADER), loss.item()))
 
@@ -97,7 +100,31 @@ def main(epochs):
         train(epoch)
         test()
 
+    if os.path.isdir("/opt/ml/model"):
+        torch.save(model.state_dict(), "/opt/ml/model/model.pth")
+        print("Model saved")
+
+
+def test_input_data():
+    if os.path.isdir("/opt/ml/input/data/training"):
+        print(os.listdir("/opt/ml/input/data/training"))
+        for i in range(1, 11):
+            with open(f"/opt/ml/input/data/training/test_data_{i}.pkl", "rb") as f:
+                try:
+                    up = pickle.Unpickler(f)
+                    while True:
+                        print(up.load())
+                except EOFError:
+                    continue
 
 
 if __name__ == "__main__":
-    main(30)
+    test_input_data()
+
+    hp = {}
+    if os.path.isfile("/opt/ml/input/config/hyperparameters.json"):
+        hp = json.load(open("/opt/ml/input/config/hyperparameters.json"))
+
+    print(hp)
+
+    main(int(hp.get("epochs", 5)))
