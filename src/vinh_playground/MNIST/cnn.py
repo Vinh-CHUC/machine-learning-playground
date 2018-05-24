@@ -119,7 +119,6 @@ def test_input_data():
 
 
 if __name__ == "__main__":
-    test_input_data()
 
     hp = {}
     if os.path.isfile("/opt/ml/input/config/hyperparameters.json"):

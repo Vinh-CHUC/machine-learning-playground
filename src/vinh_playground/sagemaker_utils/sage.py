@@ -1,27 +1,36 @@
 import argparse
+import os
 
 import boto3
 import sagemaker
 
-S = boto3.Session()
-
-def build_image_uri(image_name):
-    account_id = S.client('sts').get_caller_identity()['Account']
-    region = S.region_name
-
-    return f'{account_id}.dkr.ecr.{region}.amazonaws.com/{image_name}:latest'
+def build_inputs(base_path):
+    return {k: os.path.join(base_path, k) for k in ["train", "val", "test", "misc"]}
 
 
-def train(job_name, image_name):
+def train(job_name):
+    base_path = (
+        "s3://lyst-data-science-sagemaker/datasets/dali/"
+        "pairs_agreement-0.5_ratio-80-10-10_pos-neg-ratio-1.0_date-20180517"
+    )
+
     estimator = sagemaker.estimator.Estimator(
-        image_name=build_image_uri(image_name),
-        role="vinh_sagemaker",
+        image_name=os.getenv("ECR_REPO") + ":latest",
+        output_path="s3://lyst-data-science-sagemaker/vinh",
+        role="SageMakerFull",
         train_instance_count=1,
         train_instance_type="ml.p2.xlarge",
         train_volume_size=30,
-        hyperparameters={"epochs": 10}
+        hyperparameters={
+           "inputs_architecture": 'siamese',
+           "loss_type": 'cross_entropy',
+           "val_period": 3000,
+           "use_short_text": 1,
+           "use_images":1,
+           "use_price":1,
+        }
     )
-    estimator.fit("s3://sagemaker-eu-west-1-187232669044/data")
+    estimator.fit(build_inputs(base_path), job_name=job_name)
 
 
 if __name__ == "__main__":
